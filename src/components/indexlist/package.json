@@ -1,0 +1,12 @@
+{
+  "name": "dida-indexlist",
+  "description": "",
+  "version": "0.0.1",
+  "main": "lib/index.js",
+  "author": "laozuo",
+  "homepage": "https://github.com/minguman/didaui",
+  "license": "MIT",
+  "repository": "https://github.com/minguman/didaui/tree/master/components/dida-indexlist",
+  "dependencies": {
+  }
+}
