@@ -2,7 +2,7 @@ import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 
 import { Heroes } from './data/heroes';
-
+import { mergeSort } from '@/util/'
 let _Heroes = Heroes;
 
 export default {
@@ -11,14 +11,20 @@ export default {
 		let mock = new MockAdapter(axios);
     //获取info列表
     mock.onGet('/api/heroes').reply(config => {
-      console.dir(config);
+
+      let sortHeroes = mergeSort(_Heroes, 'firstLetter')
+      //console.log(mergeSort(_Heroes, 'firstLetter'))
       return new Promise((resolve, reject) => {
         setTimeout(() => {
           resolve([200,{
-            heroes: _Heroes
+            data: sortHeroes,
+            message: 'Success'
           }]);
-        },1000);
+        },100);
       })
     })
+    // mock.onGet('/api/heroes').reply(200, {
+    //   data: _Heroes
+    // })
 	}
 }

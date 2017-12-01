@@ -1,70 +1,24 @@
 <template>
   <div class="hello">
-<!--     <index-list 
+    <index-list 
     @onSearchCancel="onSearchCancelHandle"
     :showSearch="true">
       <div class="lazy-cell">
-        <div class="lazy-cell-divider">A</div>
-        <div class="lazy-cell-item">
-          <div class="lazy-cell-item-avator">
-            <img src="http://www.mingujie.com/uploadfile/lol/images/avatar/480.jpg" lazy="loaded">
-          </div>
-          <div class="lazy-cell-item-content">
-            <h4 class="name">暗裔剑魔<span class="nick-name">亚托克斯</span></h4>
-          </div>
-        </div>
-        <div class="lazy-cell-divider">B</div>
-        <div class="lazy-cell-item">
-          <div class="lazy-cell-item-avator">
-            <img src="http://www.mingujie.com/uploadfile/lol/images/avatar/480.jpg" lazy="loaded">
-          </div>
-          <div class="lazy-cell-item-content">
-            <h4 class="name">暗裔剑魔<span class="nick-name">亚托克斯</span></h4>
-          </div>
-        </div>
-        <div class="lazy-cell-item">
-          <div class="lazy-cell-item-avator">
-            <img src="http://www.mingujie.com/uploadfile/lol/images/avatar/480.jpg" lazy="loaded">
-          </div>
-          <div class="lazy-cell-item-content">
-            <h4 class="name">暗裔剑魔<span class="nick-name">亚托克斯</span></h4>
-          </div>
-        </div>
-        <div class="lazy-cell-item">
-          <div class="lazy-cell-item-avator">
-            <img src="http://www.mingujie.com/uploadfile/lol/images/avatar/480.jpg" lazy="loaded">
-          </div>
-          <div class="lazy-cell-item-content">
-            <h4 class="name">暗裔剑魔<span class="nick-name">亚托克斯</span></h4>
-          </div>
-        </div>
-        <div class="lazy-cell-divider">E</div>
-        <div class="lazy-cell-item">
-          <div class="lazy-cell-item-avator">
-            <img src="http://www.mingujie.com/uploadfile/lol/images/avatar/480.jpg" lazy="loaded">
-          </div>
-          <div class="lazy-cell-item-content">
-            <h4 class="name">暗裔剑魔<span class="nick-name">亚托克斯</span></h4>
-          </div>
-        </div>
-        <div class="lazy-cell-item">
-          <div class="lazy-cell-item-avator">
-            <img src="http://www.mingujie.com/uploadfile/lol/images/avatar/480.jpg" lazy="loaded">
-          </div>
-          <div class="lazy-cell-item-content">
-            <h4 class="name">暗裔剑魔<span class="nick-name">亚托克斯</span></h4>
-          </div>
-        </div>
-        <div class="lazy-cell-item">
-          <div class="lazy-cell-item-avator">
-            <img src="http://www.mingujie.com/uploadfile/lol/images/avatar/480.jpg" lazy="loaded">
-          </div>
-          <div class="lazy-cell-item-content">
-            <h4 class="name">暗裔剑魔<span class="nick-name">亚托克斯</span></h4>
-          </div>
-        </div>
+        <template v-for="(arr, key ,index) in heroesList">
+          <div class="lazy-cell-divider" :key="key">{{key}}</div>
+          <template v-for="hero in arr">        
+            <div class="lazy-cell-item" :key="hero.hid">
+              <div class="lazy-cell-item-avator">
+                <img :src="hero.avator" lazy="loaded">
+              </div>
+              <div class="lazy-cell-item-content">
+                <h4 class="name">{{hero.name}}<span class="nick-name">{{hero.nickName}}</span></h4>
+              </div>
+            </div>
+          </template>
+        </template>
       </div>
-    </index-list> -->
+    </index-list>
   </div>
 </template>
 
@@ -78,17 +32,44 @@ export default {
   name: 'HelloWorld',
   data () {
     return {
+      heroesList: [],
       msg: 'Welcome to Your Vue.js App'
     }
   },
   methods: {
     onSearchCancelHandle(value){
       console.log('这是一个搜索按钮', value)
-    }
+    },
+    databyLetterSort(data){
+      //console.log(data)
+      var obj = {}
+      data.map(function(value, index, arr){
+
+        if(!obj[value.firstLetter]) {
+          obj[value.firstLetter] = [value]
+        }else {
+          obj[value.firstLetter].push(value)
+        }
+        
+      })
+      console.log(obj)
+      return obj
+      
+    },
   },
+
   mounted(){
+    let self = this
     getHeroesList().then((res)=>{
-      console.log('请求完成',res)
+      if(res.status === 200) {
+        let data = res.data.data
+        if(data && data.length){
+         return self.databyLetterSort(data)
+        }
+      }
+    }).then((data)=>{
+      console.log('nihao', data)
+      this.heroesList = data
     })
   }
 }

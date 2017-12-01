@@ -193,6 +193,12 @@
         type: String,
         default: '搜索英雄'
       },
+      list: {
+        type: Array,
+        default: ()=>{
+          return []
+        }
+      },
       cancelText: {
         type: String,
         default: '取消'
