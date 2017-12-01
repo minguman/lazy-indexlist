@@ -1,34 +1,34 @@
 <template>
-  <div class="dida-indexlist">
-    <div class="dida-indexlist-search" ref="search">
+  <div class="lazy-indexlist">
+    <div class="lazy-indexlist-search" ref="search">
       <div class="search-wrap">
         <div class="bar bar-header item-input-inset">
           <label class="item-input-wrapper">
             <i class="icon ion-ios-search placeholder-icon"></i>
-              <input type="search" :placeholder="searchPlaceholder" v-model="keywords">
+              <input type="search" :placeholder="searchPlaceholder" v-model="searchKeyword">
           </label>
           <button class="button button-clear button-positive"
-            @click='onCancel()' v-text="cancelText">
+            @click='onCancel()'>
           </button>
         </div>
       </div>
     </div>
-    <div class="dida-indexlist-content" ref="content">
+    <div class="lazy-indexlist-content" ref="content">
       <slot></slot>
     </div>
-    <div class="dida-indexlist-nav" ref="nav">
-      <ul class="dida-indexlist-navlist">
-        <li class="dida-indexlist-navitem"></li>
+    <div class="lazy-indexlist-nav" ref="nav">
+      <ul class="lazy-indexlist-navlist">
+        <li class="lazy-indexlist-navitem"></li>
       </ul>
     </div>
-    <div class='dida-search-results' v-if="searchKeyword !== ''">
+    <div class='lazy-search-results' ref="searchResults" v-if="searchKeyword !== ''">
     </div>
   </div>
 </template>
 
 <script type="text/babel">
   export default {
-    name: 'dida-indexlist',
+    name: 'lazy-indexlist',
 
     props: {
       contentHeight: Number,
@@ -48,7 +48,14 @@
         type: String,
         default: '搜索英雄'
       },
-      searchKeyword: String,
+      cancelText: {
+        type: String,
+        default: '取消'
+      },
+      searchKeyword: {
+        type: String,
+        default: ''
+      },
       searchError: {
         type: String,
         default: '没有找到与'+ this.searchKeyword +'相关的内容!'
@@ -68,6 +75,9 @@
       init() {
 
       },
+      onCancel(keyword){
+
+      }
 
     },
 
@@ -85,7 +95,7 @@
       background-size: 100% 1px;
       background-repeat: no-repeat;
   }
-  .dida-indexlist-search {
+  .lazy-indexlist-search {
     width: 100%;
     position: fixed;
     z-index: 2;

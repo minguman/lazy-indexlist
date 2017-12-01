@@ -10,8 +10,18 @@ module.exports = {
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    proxyTable: {},
-
+    // proxyTable: {},
+    proxyTable: {
+        '/api/*': {
+            //每次设置需要重启
+           target:'http://127.0.0.1:8080', //mock address
+           // target: 'http://'+rootIP,
+            changeOrigin: true,
+            pathRewrite: {
+                '^/api': 'api',
+            }
+        }
+    },
     // Various Dev Server settings
     host: 'localhost', // can be overwritten by process.env.HOST
     port: 8080, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
