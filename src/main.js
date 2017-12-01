@@ -3,6 +3,8 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
+import Mock from '@/mock'
+Mock.bootstrap();
 import './styles/lazyui.css'
 Vue.config.productionTip = false
 
