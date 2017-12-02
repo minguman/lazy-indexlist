@@ -12,20 +12,40 @@
       </div>
     </div>
     <div class="lazy-indexlist-content" ref="content">
-      <slot></slot>
+      <slot name="list"></slot>
+
+      <div class='lazy-search-results' ref="searchResults" v-if="keyword !== ''">
+        <slot name="searchResults"></slot>
+      </div>
     </div>
     <div class="lazy-indexlist-nav" ref="nav">
       <ul class="lazy-indexlist-navlist">
         <li class="lazy-indexlist-navitem"></li>
       </ul>
     </div>
-    <div class='lazy-search-results' ref="searchResults" v-if="keyword !== ''">
-    </div>
-  </div>
+      </div>
 </template>
 <style lang="scss">
   .lazy-cell {
     zoom: 1;
+  }
+  .lazy-warning {
+
+  }
+  .lazy-indexlist-content {
+    position: relative;
+  }
+  .lazy-search-results {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    z-index: 3;
+    overflow: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #FFF;
   }
   .lazy-cell-divider,
   .lazy-cell-item {
@@ -203,14 +223,20 @@
         type: String,
         default: '取消'
       },
+      searchResults: {
+        type: Array,
+        default:()=>{
+          return []
+        }
+      },
       searchChange: Function,
       searchKeyword: {
         type: String,
         default: ''
       },
-      searchError: {
+      searchResultsError: {
         type: String,
-        default: '没有找到与相关的内容!'
+        default: '没有找到相关的内容'
       }
     },
 
@@ -226,7 +252,11 @@
       
     },
     watch: {
-
+      keyword: {
+        handler: function(newVal, oldVal){
+          this.onChange(newVal)
+        }
+      }
     },
 
     methods: {
@@ -240,6 +270,9 @@
       onCancel(){
         this.keyword = ''
         this.$emit('onSearchCancel', this.keyword)
+      },
+      onChange(keyword){
+        this.$emit('onSearchChange', keyword)
       }
 
     },
