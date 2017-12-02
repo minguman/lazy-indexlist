@@ -1,8 +1,9 @@
 <template>
   <div class="hello">
-    <index-list 
+    <index-list
     @onSearchCancel="onSearchCancelHandle"
     @onSearchChange="onSearchChangeHandle"
+    :letterList="letterList"
     :showSearch="true">
       <template slot="list">
         <div class="lazy-cell">
@@ -51,17 +52,21 @@ export default {
       heroesList: [],
       heroesMap: [],
       searchList: [],
+      letterList: [],
       searchResultsError: '没有找到相关搜索内容'
     }
   },
   methods: {
+    /**
+     * onSearchChangeHandle 输入关键词时的回调方法，由子组件传递
+     * @param  { String } keyword 搜索时的关键词
+     * @return {[type]}         [description]
+     */
     onSearchChangeHandle(keyword){
       let searchList = []
       if(keyword){
         searchList = this._search(keyword, this.heroesMap)
       }
-
-
       console.log('搜索关键词', searchList)
       this.searchList = searchList
       
@@ -104,17 +109,17 @@ export default {
      * @return { Object }  data中firstLetter为Key的map
      */
     databyLetterSort(data){
-      //console.log(data)
-      var obj = {}
+      let obj = {}
+      let letterList = []
       data.map(function(value, index, arr){
         if(!obj[value.firstLetter]) {
           obj[value.firstLetter] = [value]
+          letterList.push(value.firstLetter)
         }else {
           obj[value.firstLetter].push(value)
         }
-        
       })
-      return obj
+      return {map: obj, letterList: letterList}
     },
   },
 
@@ -129,8 +134,9 @@ export default {
         }
       }
     }).then((data)=>{
-      console.log('nihao', data)
-      this.heroesMap = data
+      console.log(data)
+      this.letterList = data.letterList
+      this.heroesMap = data.map
     })
   }
 }

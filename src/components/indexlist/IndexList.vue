@@ -7,45 +7,83 @@
             <input class="lazy-search-input" type="search" :placeholder="searchPlaceholder" v-model="keyword">
         </label>
         <button class="lazy-button lazy-button-clear"
-          @click='onCancel(keyword)' v-text="cancelText">
+          @click="onCancel(keyword)" v-text="cancelText">
         </button>
       </div>
     </div>
-    <div class="lazy-indexlist-content" ref="content">
+    <div class="lazy-indexlist-content" ref="content" :style="{ 'height': currentHeight + 'px'}">
       <slot name="list"></slot>
-
-      <div class='lazy-search-results' ref="searchResults" v-if="keyword !== ''">
+      <div class='lazy-search-results' ref="searchResults" v-if="keyword">
         <slot name="searchResults"></slot>
       </div>
     </div>
-    <div class="lazy-indexlist-nav" ref="nav">
+    <div class="lazy-indexlist-nav" ref="nav" @touchstart="handleTouchStart" v-if="letterList.length">
       <ul class="lazy-indexlist-navlist">
-        <li class="lazy-indexlist-navitem"></li>
+        <li class="lazy-indexlist-navitem" v-for="item in letterList">{{item}}</li>
       </ul>
     </div>
-      </div>
+    <div class="lazy-indexlist-indicator" v-if="currentIndicator">{{currentIndicator}}</div>
+  </div>
 </template>
 <style lang="scss">
   .lazy-cell {
     zoom: 1;
+    background-color: #FFF;
   }
   .lazy-warning {
 
   }
+  .lazy-indexlist-nav {
+
+    position: fixed;
+    right: 0;
+    top: 100px;
+    bottom: 0;
+    z-index: 4;
+    background: transparent;
+    .lazy-indexlist-navitem {
+      padding: 2px 6px 2px 10px;
+      font-size: 14px;
+      user-select: none;
+      cursor: pointer;
+    }
+  }
+  .lazy-indexlist-indicator {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    text-align: center;
+    line-height: 50px;
+    background-color: rgba(0,0,0,.7);
+    border-radius: 5px;
+    color: #fff;
+    font-size: 22px;
+    z-index: 9;
+  }
   .lazy-indexlist-content {
     position: relative;
+    margin: 0;
+    padding: 0;
+    overflow: auto; 
+    z-index: 1;
   }
   .lazy-search-results {
     position: absolute;
     width: 100%;
     bottom: 0;
-    z-index: 3;
+    z-index: 10;
     overflow: auto;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background: #FFF;
+    .lazy-cell-item {
+      margin-right: 0;
+    }
   }
   .lazy-cell-divider,
   .lazy-cell-item {
@@ -73,6 +111,7 @@
     padding: 17px 16px 18px 16px;
   }
   .lazy-cell-item {
+    margin-right: 30px;
     .name {
       font-size: 14px;
       font-weight: 600;
@@ -192,15 +231,25 @@
   export default {
     name: 'lazy-indexlist',
     props: {
+      //内容的高度
       contentHeight: Number,
+      //是否显示搜索
       showSearch: {
         type: Boolean,
         default: true
       },
+      letterList: {
+        type: Array,
+        default: ()=> {
+          return []
+        }
+      },
+
       indexName: {
         type: [String, Array],
         default: ''
       },
+      //是否显示导航
       showNav:{
         type: Boolean,
         default: true        
@@ -219,6 +268,7 @@
           return []
         }
       },
+      height: Number,
       cancelText: {
         type: String,
         default: '取消'
@@ -239,10 +289,16 @@
         default: '没有找到相关的内容'
       }
     },
-
     data() {
       return {
-        keyword: ''
+        keyword: '',
+        indicatorTime: null,
+        showIndicator: false,
+        navOffsetX: '',
+        currentIndicator: '',
+        firstSection: null,
+        currentHeight: '' ,
+        sections: []
       }
     },
     created(){
@@ -252,16 +308,72 @@
       
     },
     watch: {
+      letterList(){
+        this.init();
+        
+      },
+      height(val) {
+        if (val) {
+          this.currentHeight = val;
+        }
+      },
       keyword: {
         handler: function(newVal, oldVal){
           this.onChange(newVal)
         }
       }
     },
-
+    updated(){
+      this.currentHeight = document.body.clientHeight - this.$refs.content.getBoundingClientRect().top
+      this.init()
+    },
     methods: {
       init() {
 
+        let listItems = this.$refs.content.querySelectorAll('.lazy-cell-divider')
+        if (listItems.length > 0) {
+          this.firstSection = listItems[0];
+          this.sections = listItems
+        }
+      },
+      handleTouchStart(event){
+        if (event.target.tagName !== 'LI') {
+          return;
+        }
+        this.navOffsetX = event.changedTouches[0].clientX;
+        this.scrollList(event.changedTouches[0].clientY);
+        if (this.indicatorTime) {
+          clearTimeout(this.indicatorTime);
+        }
+        window.addEventListener('touchmove', this.handleTouchMove);
+        window.addEventListener('touchend', this.handleTouchEnd);
+      },
+      handleTouchMove(e) {
+        e.preventDefault();
+        this.scrollList(e.changedTouches[0].clientY);
+      },
+      handleTouchEnd() {
+        this.indicatorTime = setTimeout(() => {
+          this.moving = false;
+          this.currentIndicator = '';
+        }, 500);
+        window.removeEventListener('touchmove', this.handleTouchMove);
+        window.removeEventListener('touchend', this.handleTouchEnd);
+      },
+      scrollList(y) {
+        let currentItem = document.elementFromPoint(this.navOffsetX, y);
+        if (!currentItem || !currentItem.classList.contains('lazy-indexlist-navitem')) {
+          return;
+        }
+        this.currentIndicator = currentItem.innerText;
+        for(var i=0; i<this.sections.length;i++) {
+          if(currentItem.innerText === this.sections[i].innerText) {
+            var targetDOM = this.sections[i]
+          }
+        }
+        if (targetDOM) {
+          this.$refs.content.scrollTop = targetDOM.getBoundingClientRect().top - this.firstSection.getBoundingClientRect().top;
+        }
       },
       /**
        * onCancel 取消搜索时
@@ -275,11 +387,7 @@
         this.$emit('onSearchChange', keyword)
       }
 
-    },
-
-    mounted() {
-
-    }
+    }  
   };
 </script>
 
