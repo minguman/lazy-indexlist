@@ -328,15 +328,27 @@
       this.init()
     },
     methods: {
+      /**
+       * init 组件初始化
+       * @获取内容区域索引内容的dom list
+       * @return {[type]} [description]
+       */
       init() {
-
         let listItems = this.$refs.content.querySelectorAll('.lazy-cell-divider')
         if (listItems.length > 0) {
           this.firstSection = listItems[0];
           this.sections = listItems
         }
       },
+      /**
+       * handleTouchStart nav面板上的touch事件
+       * @获取点击时当前元素的x坐标并赋值给navOffsetX
+       * @获取被点击元素的y坐标并传给scrollList
+       * @param  {[type]} event [description]
+       * @return {[type]}       [description]
+       */
       handleTouchStart(event){
+        //如果当前被点击的元素不是LI直接return
         if (event.target.tagName !== 'LI') {
           return;
         }
@@ -345,32 +357,54 @@
         if (this.indicatorTime) {
           clearTimeout(this.indicatorTime);
         }
+        //绑定事件
         window.addEventListener('touchmove', this.handleTouchMove);
         window.addEventListener('touchend', this.handleTouchEnd);
       },
-      handleTouchMove(e) {
-        e.preventDefault();
-        this.scrollList(e.changedTouches[0].clientY);
+      /**
+       * handleTouchMove 触屏移动
+       * @param  {[type]} event [description]
+       * @return {[type]}       [description]
+       */
+      handleTouchMove(event) {
+        event.preventDefault();
+        this.scrollList(event.changedTouches[0].clientY);
       },
+      /**
+       * handleTouchEnd 触摸结束后回调方法
+       * 创建一个定时器，500毫秒后给currentIndicator赋值为空字符串
+       * 移除绑定的事件及回调方法
+       * @return {[type]} [description]
+       */
       handleTouchEnd() {
         this.indicatorTime = setTimeout(() => {
-          this.moving = false;
           this.currentIndicator = '';
         }, 500);
         window.removeEventListener('touchmove', this.handleTouchMove);
         window.removeEventListener('touchend', this.handleTouchEnd);
       },
+      /**
+       * [scrollList] 
+       * @param  {[type]} y [description]
+       * @return {[type]}   [description]
+       */
       scrollList(y) {
+        //获取x,y坐标位置的元素
         let currentItem = document.elementFromPoint(this.navOffsetX, y);
+        //如果不存在该元素或不存在相关元素 直接return
         if (!currentItem || !currentItem.classList.contains('lazy-indexlist-navitem')) {
           return;
         }
+        //获取当前元素的文本内容并赋值给currentIndicator
         this.currentIndicator = currentItem.innerText;
+
+        //轮训已获取的DOM列表，拿到与当前innerText相同DOM元素的
         for(var i=0; i<this.sections.length;i++) {
           if(currentItem.innerText === this.sections[i].innerText) {
             var targetDOM = this.sections[i]
           }
         }
+        //判断是否存在DOM，如果存在便获取DOM距离到顶端的距离减去第一个DOM到顶端的距离
         if (targetDOM) {
           this.$refs.content.scrollTop = targetDOM.getBoundingClientRect().top - this.firstSection.getBoundingClientRect().top;
         }
@@ -383,6 +417,11 @@
         this.keyword = ''
         this.$emit('onSearchCancel', this.keyword)
       },
+      /**
+       * onChange 搜索内容发生变化时回调方法
+       * @param  { String } keyword 关键词
+       * @return {[type]}         [description]
+       */
       onChange(keyword){
         this.$emit('onSearchChange', keyword)
       }
